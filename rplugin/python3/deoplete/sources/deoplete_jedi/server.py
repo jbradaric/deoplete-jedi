@@ -17,7 +17,7 @@ import argparse
 import subprocess
 import logging
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('deoplete.jedi.server')
 log.addHandler(logging.NullHandler)
 
 try:
@@ -298,7 +298,13 @@ if __name__ == '__main__':
 
     if args.debug:
         log.removeHandler(logging.NullHandler)
-        handler = logging.FileHandler('/tmp/jedi-server.log')
+        log_file = os.getenv('NVIM_DEOPLETE_JEDI_LOG_FILE') \
+            if 'NVIM_DEOPLETE_JEDI_LOG_FILE' in os.environ \
+            else '/tmp/jedi-server.log'
+        handler = logging.FileHandler(log_file)
+        log_format = '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'
+        formatter = logging.Formatter(log_format)
+        handler.setFormatter(formatter)
         handler.setLevel(logging.DEBUG)
         log.addHandler(handler)
         log.setLevel(logging.DEBUG)
