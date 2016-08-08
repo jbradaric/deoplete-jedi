@@ -52,6 +52,14 @@ class Source(Base):
         self.extra_path = vars.get(
             'deoplete#sources#jedi#extra_path', [])
 
+        self.use_filesystem_cache = vars.get(
+            'deoplete#sources#jedi#use_filesystem_cache', False
+        )
+
+        self.auto_imports = vars.get(
+            'deoplete#sources#jedi#auto_imports', ()
+        )
+
         self.workers_started = False
         self.boilerplate = []  # Completions that are included in all results
 
@@ -77,7 +85,8 @@ class Source(Base):
                 cache.python_path = self.python_path
             worker.start(max(1, self.worker_threads), self.statement_length,
                          self.use_short_types, self.show_docstring,
-                         (log_file, root_log.level), self.python_path)
+                         (log_file, root_log.level), self.python_path,
+                         self.use_filesystem_cache, self.auto_imports)
             cache.start_background(worker.comp_queue)
             self.workers_started = True
 
