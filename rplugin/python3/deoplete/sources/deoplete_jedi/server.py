@@ -141,16 +141,15 @@ class Server(object):
 
     This is created when this script is ran directly.
     """
-    def __init__(self, desc_len=0, short_types=False, show_docstring=False,
-                 use_filesystem_cache=False, auto_imports=()):
+    def __init__(self, desc_len=0, short_types=False, show_docstring=False):
         self.desc_len = desc_len
         self.use_short_types = short_types
         self.show_docstring = show_docstring
         self.unresolved_imports = set()
 
         from jedi import settings
-        settings.use_filesystem_cache = use_filesystem_cache
-        settings.auto_import_modules.extend(auto_imports)
+
+        settings.use_filesystem_cache = False
 
     def _loop(self):
         from jedi.evaluate.sys_path import _get_venv_sitepackages
@@ -459,7 +458,7 @@ class Client(object):
     max_completion_count = 50
 
     def __init__(self, desc_len=0, short_types=False, show_docstring=False,
-                 debug=False, python_path=None, use_filesystem_cache=False, auto_imports=None):
+                 debug=False, python_path=None):
         self._server = None
         self.restarting = threading.Lock()
         self.version = (0, 0, 0, 'final', 0)
@@ -486,11 +485,6 @@ class Client(object):
         if debug:
             self.cmd.extend(('--debug', debug[0], '--debug-level',
                              str(debug[1])))
-        if use_filesystem_cache:
-            self.cmd.append('--use-filesystem-cache')
-        if auto_imports is not None:
-            self.cmd.append('--auto-imports')
-            self.cmd.append(','.join(auto_imports))
 
         try:
             self.restart()
@@ -556,8 +550,6 @@ if __name__ == '__main__':
     parser.add_argument('--docstrings', action='store_true')
     parser.add_argument('--debug', default='')
     parser.add_argument('--debug-level', type=int, default=logging.DEBUG)
-    parser.add_argument('--use-filesystem-cache', action='store_true')
-    parser.add_argument('--auto-imports')
     args = parser.parse_args()
 
     if args.debug:
@@ -571,8 +563,7 @@ if __name__ == '__main__':
         log.setLevel(logging.DEBUG)
         log = log.getChild('jedi.server')
 
-    s = Server(args.desc_length, args.short_types, args.docstrings,
-               args.use_filesystem_cache, args.auto_imports.split(','))
+    s = Server(args.desc_length, args.short_types, args.docstrings)
     s.run()
 else:
     log = log.getChild('jedi.client')
