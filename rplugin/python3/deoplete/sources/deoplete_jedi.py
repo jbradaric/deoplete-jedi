@@ -45,6 +45,8 @@ class Source(Base):
             'deoplete#sources#jedi#show_docstring', False)
         self.debug_server = vars.get(
             'deoplete#sources#jedi#debug_server', None)
+        self.auto_imports = vars.get(
+            'deoplete#sources#jedi#auto_imports', ())
         # Only one worker is really needed since deoplete-jedi has a pretty
         # aggressive cache.
         # Two workers may be needed if working with very large source files.
@@ -80,7 +82,7 @@ class Source(Base):
                 cache.python_path = self.python_path
             worker.start(max(1, self.worker_threads), self.statement_length,
                          self.server_timeout, self.use_short_types, self.show_docstring,
-                         (log_file, root_log.level), self.python_path)
+                         (log_file, root_log.level), self.python_path, self.auto_imports)
             cache.start_background(worker.comp_queue)
             self.workers_started = True
 

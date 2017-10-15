@@ -144,7 +144,7 @@ class Server(object):
 
     This is created when this script is ran directly.
     """
-    def __init__(self, desc_len=0, short_types=False, show_docstring=False):
+    def __init__(self, desc_len=0, short_types=False, show_docstring=False, auto_imports=()):
         self.desc_len = desc_len
         self.use_short_types = short_types
         self.show_docstring = show_docstring
@@ -153,6 +153,7 @@ class Server(object):
         from jedi import settings
 
         settings.use_filesystem_cache = False
+        settings.auto_import_modules.extend(auto_imports or [])
 
     def _loop(self):
         from jedi.evaluate.sys_path import _get_venv_sitepackages
@@ -465,7 +466,7 @@ class Client(object):
     max_completion_count = 50
 
     def __init__(self, desc_len=0, short_types=False, show_docstring=False,
-                 debug=False, python_path=None):
+                 debug=False, python_path=None, auto_imports=()):
         self._server = None
         self.restarting = threading.Lock()
         self.version = (0, 0, 0, 'final', 0)
@@ -493,6 +494,9 @@ class Client(object):
         if debug:
             self.cmd.extend(('--debug', debug[0], '--debug-level',
                              str(debug[1])))
+        if auto_imports:
+            self.cmd.append('--auto-imports')
+            self.cmd.extend(auto_imports)
 
         try:
             self.restart()
@@ -558,6 +562,7 @@ if __name__ == '__main__':
     parser.add_argument('--docstrings', action='store_true')
     parser.add_argument('--debug', default='')
     parser.add_argument('--debug-level', type=int, default=logging.DEBUG)
+    parser.add_argument('--auto-imports', type=list, nargs='+')
     args = parser.parse_args()
 
     if args.debug:
@@ -571,7 +576,7 @@ if __name__ == '__main__':
         log.setLevel(logging.DEBUG)
         log = log.getChild('jedi.server')
 
-    s = Server(args.desc_length, args.short_types, args.docstrings)
+    s = Server(args.desc_length, args.short_types, args.docstrings, args.auto_imports)
     s.run()
 else:
     log = log.getChild('jedi.client')

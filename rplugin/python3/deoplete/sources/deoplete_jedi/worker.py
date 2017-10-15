@@ -18,9 +18,9 @@ class Worker(threading.Thread):
 
     def __init__(self, in_queue, out_queue, desc_len=0, server_timeout=10,
                  short_types=False, show_docstring=False, debug=False,
-                 python_path=None):
+                 python_path=None, auto_imports=()):
         self._client = Client(desc_len, short_types, show_docstring, debug,
-                              python_path)
+                              python_path, auto_imports)
 
         self.server_timeout = server_timeout
         self.in_queue = in_queue
@@ -75,10 +75,10 @@ class Worker(threading.Thread):
 
 
 def start(count, desc_len=0, server_timeout=10, short_types=False,
-          show_docstring=False, debug=False, python_path=None):
+          show_docstring=False, debug=False, python_path=None, auto_imports=()):
     while count > 0:
         t = Worker(work_queue, comp_queue, desc_len, server_timeout, short_types,
-                   show_docstring, debug, python_path)
+                   show_docstring, debug, python_path, auto_imports)
         workers.append(t)
         t.start()
         log.debug('Started worker: %r', t)
